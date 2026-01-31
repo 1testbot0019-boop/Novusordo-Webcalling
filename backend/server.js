@@ -9,27 +9,18 @@ require('dotenv').config();
 const app = express();
 const server = http.createServer(app);
 
-// Use the PORT provided by Render, or default to 10000
 const PORT = process.env.PORT || 10000;
 
-// Enable CORS so your GitHub Pages frontend can talk to this server
+// Middleware
 app.use(cors());
 app.use(express.json());
 
 // --- Database Connection ---
 const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!MONGODB_URI) {
-    console.error("FATAL ERROR: MONGODB_URI is not defined in Environment Variables.");
-    process.exit(1);
-}
-
 mongoose.connect(MONGODB_URI)
     .then(() => console.log("✅ MongoDB Connected Successfully"))
-    .catch(err => {
-        console.error("❌ MongoDB Connection Failed:", err.message);
-        // Don't exit yet, let the server try to start
-    });
+    .catch(err => console.error("❌ MongoDB Connection Failed:", err.message));
 
 const userSchema = new mongoose.Schema({
     userId: { type: String, unique: true, required: true },
@@ -52,14 +43,31 @@ if (publicVapidKey && privateVapidKey) {
         privateVapidKey
     );
     console.log("✅ Web Push VAPID keys configured");
-} else {
-    console.error("⚠️ WARNING: VAPID keys missing. Push notifications will not work.");
 }
+
+// --- API Routes ---
+
+// NEW: This is the missing POST route your frontend is calling
+app.post('/register', async (req, res) => {
+    const { userId, displayName, subscription } = req.body;
+    try {
+        const user = await User.findOneAndUpdate(
+            { userId },
+            { userId, displayName, pushSubscription: subscription, lastSeen: Date.now() },
+            { upsert: true, new: true }
+        );
+        console.log(`📝 Registered/Updated User in DB: ${userId}`);
+        res.status(200).json({ success: true });
+    } catch (err) {
+        console.error("❌ Registration Route Error:", err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // --- Socket.IO Handshake ---
 const io = new Server(server, {
     cors: {
-        origin: "*", 
+        origin: "*",
         methods: ["GET", "POST"]
     }
 });
@@ -121,12 +129,10 @@ io.on('connection', (socket) => {
     });
 });
 
-// Health check endpoint for Render
 app.get('/', (req, res) => {
     res.send('Novusordo Signaling Server is Live 🚀');
 });
 
-// Start the server
 server.listen(PORT, () => {
     console.log(`🚀 Signaling server running on port ${PORT}`);
 });
