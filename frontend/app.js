@@ -1,5 +1,6 @@
 // --- Configuration ---
-const BACKEND_URL = "https://your-render-app-name.onrender.com"; // REPLACE with your Render URL
+// REPLACE 'your-app-name' with your actual Render URL after deployment
+const BACKEND_URL = "https://novusordo-backend.onrender.com"; 
 const socket = io(BACKEND_URL);
 
 // DOM Elements
@@ -27,34 +28,41 @@ document.getElementById('register-btn').addEventListener('click', async () => {
     myId = usernameInput.value.trim().toLowerCase();
     if (!myId) return alert("Please enter a Call ID");
 
-    // Request Notification Permission
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-        alert("Permission for notifications is required for incoming calls.");
-    }
+    try {
+        // Request Notification Permission
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            alert("Permission for notifications is required for incoming calls.");
+        }
 
-    // Register Service Worker and get Subscription
-    const registration = await navigator.serviceWorker.register('sw.js');
-    const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: 'YOUR_PUBLIC_VAPID_KEY' // REPLACE with your VAPID Public Key
-    });
+        // Register Service Worker and get Subscription
+        const registration = await navigator.serviceWorker.register('sw.js');
+        
+        // YOUR SPECIFIC PUBLIC KEY APPLIED HERE
+        const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: 'BBek4z_L25C-DYDDJoKS7nuK2LTGsjuMe5eY_u8vH2nHZwbMy-KN4W4Q25jo7EwwIhAULMO_IT93OcM4g3FiGuY'
+        });
 
-    // Send to Backend
-    const response = await fetch(`${BACKEND_URL}/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            userId: myId,
-            displayName: myId,
-            subscription: subscription
-        })
-    });
+        // Send to Backend
+        const response = await fetch(`${BACKEND_URL}/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: myId,
+                displayName: myId,
+                subscription: subscription
+            })
+        });
 
-    if (response.ok) {
-        socket.emit('join', myId);
-        showArea('call');
-        displayId.innerText = `@${myId}`;
+        if (response.ok) {
+            socket.emit('join', myId);
+            showArea('call');
+            displayId.innerText = `@${myId}`;
+        }
+    } catch (err) {
+        console.error("Registration failed:", err);
+        alert("Setup failed. Ensure you are using HTTPS.");
     }
 });
 
@@ -131,11 +139,11 @@ socket.on('call-accepted', (signalData) => {
 document.getElementById('hangup-btn').addEventListener('click', endCall);
 document.getElementById('reject-btn').addEventListener('click', () => {
     incomingModal.classList.add('hidden');
-    // Optionally notify caller rejection
 });
 
 socket.on('call-ended', () => {
-    location.reload(); // Simple way to reset state
+    alert("Call Ended");
+    location.reload(); 
 });
 
 function endCall() {
