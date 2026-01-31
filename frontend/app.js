@@ -1,6 +1,6 @@
 // --- Configuration ---
 // REPLACE 'your-app-name' with your actual Render URL after deployment
-const BACKEND_URL = "https://novusordo-backend.onrender.com"; 
+const BACKEND_URL = "https://novusordo-webcalling.onrender.com"; 
 const socket = io(BACKEND_URL);
 
 // DOM Elements
