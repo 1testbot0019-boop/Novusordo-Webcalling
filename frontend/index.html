@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrivacyCall - WebRTC Audio</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>PrivacyCall</h1>
+            <p>Secure, Browser-to-Browser Audio</p>
+        </header>
+
+        <main id="app">
+            <section id="registration-area" class="card">
+                <h3>Set Your Identity</h3>
+                <input type="text" id="username-input" placeholder="Enter your Call ID (e.g. bhupender)">
+                <button id="register-btn">Go Online</button>
+                <p class="note">This registers your ID for incoming calls.</p>
+            </section>
+
+            <section id="call-area" class="card hidden">
+                <div class="status-bar">
+                    <span id="online-status">●</span> Online as: <strong id="display-id">---</strong>
+                </div>
+                
+                <div class="dialer">
+                    <input type="text" id="target-id-input" placeholder="Enter Friend's Call ID">
+                    <button id="start-call-btn" class="btn-primary">📞 Start Audio Call</button>
+                </div>
+            </section>
+
+            <section id="active-call-area" class="card hidden">
+                <div class="call-info">
+                    <div class="avatar">👤</div>
+                    <h2 id="remote-user-id">Username</h2>
+                    <p id="call-status">Connecting...</p>
+                </div>
+                
+                <div class="controls">
+                    <button id="mute-btn">Mute</button>
+                    <button id="hangup-btn" class="btn-danger">End Call</button>
+                </div>
+            </section>
+        </main>
+
+        <audio id="remote-audio" autoplay></audio>
+        
+        <footer>
+            <p>Privacy-First: No logs, No tracking.</p>
+        </footer>
+    </div>
+
+    <div id="incoming-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Incoming Call</h3>
+            <p><strong id="caller-name">User</strong> is calling...</p>
+            <div class="modal-actions">
+                <button id="accept-btn" class="btn-success">Accept</button>
+                <button id="reject-btn" class="btn-danger">Reject</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
